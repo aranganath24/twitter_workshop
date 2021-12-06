@@ -103,8 +103,7 @@ twitter_wordcloud<-function(twitterhandle, tweet_number){
 lebron_james<-twitter_wordcloud(KingJames, 100)
 
 twitter_wordcloud<-function(twitterhandle, tweet_number){
-  handle_as_string<-deparse(substitute(twitterhandle))
-  tweet_timeline<-get_timeline(handle_as_string, n=tweet_number)
+  tweet_timeline<-get_timeline(twitterhandle, n=tweet_number)
   tweet_timeline_text<-str_c(tweet_timeline$text, collapse="")
   tweet_timeline_text<-str_remove_all(tweet_timeline_text, pattern='[:emoji:]')
   tweet_timeline_text<-tweet_timeline_text %>%
@@ -134,27 +133,16 @@ twitter_wordcloud<-function(twitterhandle, tweet_number){
 
 
 # test function 
-lebron_wordcloud<-twitter_wordcloud(KingJames, 400)
-krugman_wordcloud<-twitter_wordcloud(paulkrugman, 400)
+lebron_wordcloud<-twitter_wordcloud("KingJames", 400)
+krugman_wordcloud<-twitter_wordcloud("paulkrugman", 400)
+elon_wordcloud<-twitter_wordcloud("elonmusk", 400)
 
+# iterate WC generation 
 
+handles<-c("kingJames", "paulKrugman", "elonmusk")
+number<-c(400)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+wordcloud_list<-map2(.x=handles, .y=number, twitter_wordcloud)
 
 
 
