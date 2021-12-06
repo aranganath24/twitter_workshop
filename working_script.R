@@ -100,12 +100,39 @@ twitter_wordcloud<-function(twitterhandle, tweet_number){
 }
 
   
-
 lebron_james<-twitter_wordcloud(KingJames, 100)
 
+twitter_wordcloud<-function(twitterhandle, tweet_number){
+  handle_as_string<-deparse(substitute(twitterhandle))
+  tweet_timeline<-get_timeline(handle_as_string, n=tweet_number)
+  tweet_timeline_text<-str_c(tweet_timeline$text, collapse="")
+  tweet_timeline_text<-str_remove_all(tweet_timeline_text, pattern='[:emoji:]')
+  tweet_timeline_text<-tweet_timeline_text %>%
+                              str_remove("\\n") %>%                   # remove linebreaks
+                              rm_twitter_url() %>%                    # Remove URLS
+                              rm_url() %>%
+                              str_remove_all("#\\S+") %>%             # Remove any hashtags
+                              str_remove_all("@\\S+") %>%             # Remove any @ mentions
+                              removeWords(stopwords("english")) %>%   # Remove common words (a, the, it etc.)
+                              removeNumbers() %>%
+                              stripWhitespace() %>%
+                              removeWords(c("amp"))                   # Final cleanup of other small changes
+  
+  textCorpus <- 
+    Corpus(VectorSource(tweet_timeline_text)) %>%
+    TermDocumentMatrix() %>%
+    as.matrix()
+  
+  textCorpus <- sort(rowSums(textCorpus), decreasing=TRUE)
+  textCorpus <- data.frame(word = names(textCorpus), freq=textCorpus, row.names = NULL)
+  
+  wordcloud <- wordcloud2(data = textCorpus, minRotation = 0, maxRotation = 0, ellipticity = 0.2)
+  
+  return(wordcloud)
+  
+}
 
-
-
+lebron_wordcloud<-twitter_wordcloud(KingJames, 400)
 
 
 
