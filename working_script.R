@@ -91,16 +91,17 @@ wordcloud <- wordcloud2(data = textCorpus, minRotation = 0, maxRotation = 0, ell
 wordcloud
 
 
+# Wrap word cloud code into a function that takes twitter account, n, and generates word cloud
 
+twitter_wordcloud<-function(twitterhandle, tweet_number){
+  handle_as_string<-deparse(substitute(twitterhandle))
+  tweet_timeline<-get_timeline(handle_as_string, n=tweet_number)
+  return(tweet_timeline)
+}
 
+  
 
-
-
-
-
-
-
-
+lebron_james<-twitter_wordcloud(KingJames, 100)
 
 
 
