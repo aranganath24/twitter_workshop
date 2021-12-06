@@ -134,6 +134,7 @@ twitter_wordcloud<-function(twitterhandle, tweet_number){
 }
 
 
+
 # test function 
 lebron_wordcloud<-twitter_wordcloud("KingJames", 400)
 krugman_wordcloud<-twitter_wordcloud("paulkrugman", 400)
@@ -146,11 +147,27 @@ number<-c(400)
 
 wordcloud_list<-map2(.x=handles, .y=number, twitter_wordcloud)
 
+# Assign names to elements in "wordcloud_list"
+names(wordcloud_list)<-handles
+
+# access list elements with name or index
+wordcloud_list[["paulKrugman"]]
+wordcloud_list[[2]]
+
+
 # writing files
 
 install_phantomjs()
 saveWidget(elon_wordcloud, "elon.html", selfcontained = F)
 webshot("elon.html", "elon.png", vwidth=1992, vheight=1744, delay=10)
+
+
+# iterate writing out files
+
+output_wordclouds<-function(wordclouds_to_export, wordcloud_names){
+  
+
+
 
 
 
