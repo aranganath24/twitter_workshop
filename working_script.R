@@ -165,10 +165,15 @@ webshot("elon.html", "elon.png", vwidth=1992, vheight=1744, delay=10)
 # iterate writing out files
 
 output_wordclouds<-function(wordclouds_to_export, wordcloud_names){
-  
+  setwd("~/Documents/git_repositories/twitter_workshop")
+  install_phantomjs()
+  saveWidget(wordclouds_to_export, paste0(wordcloud_names, ".html"), selfcontained=F)
+  webshot(paste0(wordcloud_names, ".html"), paste0(wordcloud_names, ".png"), vwidth=1992, vheight=1744, delay=10)
+}
 
 
-
+list(wordclouds_to_export=wordcloud_list, wordcloud_names=names(wordcloud_list)) %>% 
+        pmap(output_wordclouds)
 
 
 maya_wordcloud<-twitter_wordcloud("maya_ranganath", 400)
