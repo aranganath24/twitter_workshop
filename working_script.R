@@ -2,6 +2,13 @@ library(rtweet)
 library(httpuv)
 library(tidyverse)
 library(tidytext)
+library(wordcloud2)
+library(qdapRegex)
+library(tm)
+
+
+# Pulling Data from API ---------------------------------------------------
+
 
 # Pull tweets with #CancelStudentDebt; returns 1000 most recent tweets; time by GMT
 student_debt_tweets<-search_tweets(q="#CancelStudentDebt", 
@@ -38,7 +45,10 @@ View(student_debt_OR_capitalism_tweets)
 # Pull tweets from an account (doesn't have same time constraints)
 # Pull last 3200 BLM tweets
 blm_tweets<-get_timeline("@Blklivesmatter", n=3200)
-View(blm_tweets) # Note that there are only 3174, not 3200; that's because of deletions
+View(blm_tweets) # Note that there are only 3174, not 3200; that's because of deletions made on the feed
+
+
+# Cleaning and Organizing Downloaded Datasets -----------------------------
 
 
 
@@ -48,7 +58,37 @@ View(blm_tweets) # Note that there are only 3174, not 3200; that's because of de
 
 
 
+# Visualizing and Exploring Data ------------------------------------------
 
+# BLM word cloud
+
+blm_text<-str_c(blm_tweets$text, collapse="")
+
+
+blm_text <- 
+  blm_text %>%
+  str_remove("\\n") %>%                   # remove linebreaks
+  rm_twitter_url() %>%                    # Remove URLS
+  rm_url() %>%
+  str_remove_all("#\\S+") %>%             # Remove any hashtags
+  str_remove_all("@\\S+") %>%             # Remove any @ mentions
+  removeWords(stopwords("english")) %>%   # Remove common words (a, the, it etc.)
+  removeNumbers() %>%
+  stripWhitespace() %>%
+  removeWords(c("amp"))                   # Final cleanup of other small changes
+
+
+textCorpus <- 
+  Corpus(VectorSource(blm_text)) %>%
+  TermDocumentMatrix() %>%
+  as.matrix()
+
+textCorpus <- sort(rowSums(textCorpus), decreasing=TRUE)
+textCorpus <- data.frame(word = names(textCorpus), freq=textCorpus, row.names = NULL)
+
+wordcloud <- wordcloud2(data = textCorpus, minRotation = 0, maxRotation = 0, ellipticity = 0.2)
+
+wordcloud
 
 
 
