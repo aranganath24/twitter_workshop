@@ -154,7 +154,8 @@ webshot("elon.html", "elon.png", vwidth=1992, vheight=1744, delay=10)
 
 
 
-
+maya_wordcloud<-twitter_wordcloud("maya_ranganath", 400)
+cu_libraries<-twitter_wordcloud("cublibraries", 400)
 
 
 
