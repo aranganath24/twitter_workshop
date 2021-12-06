@@ -116,8 +116,9 @@ twitter_wordcloud<-function(twitterhandle, tweet_number){
                               removeWords(stopwords("english")) %>%   # Remove common words (a, the, it etc.)
                               removeNumbers() %>%
                               stripWhitespace() %>%
-                              removeWords(c("amp"))                   # Final cleanup of other small changes
-  
+                              removeWords(c("amp")) %>% 
+                              removePunctuation()
+
   textCorpus <- 
     Corpus(VectorSource(tweet_timeline_text)) %>%
     TermDocumentMatrix() %>%
@@ -127,12 +128,14 @@ twitter_wordcloud<-function(twitterhandle, tweet_number){
   textCorpus <- data.frame(word = names(textCorpus), freq=textCorpus, row.names = NULL)
   
   wordcloud <- wordcloud2(data = textCorpus, minRotation = 0, maxRotation = 0, ellipticity = 0.2)
-  
   return(wordcloud)
   
 }
 
+
+# test function 
 lebron_wordcloud<-twitter_wordcloud(KingJames, 400)
+krugman_wordcloud<-twitter_wordcloud(paulkrugman, 400)
 
 
 
