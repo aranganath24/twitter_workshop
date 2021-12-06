@@ -171,9 +171,34 @@ output_wordclouds<-function(wordclouds_to_export, wordcloud_names){
   webshot(paste0(wordcloud_names, ".html"), paste0(wordcloud_names, ".png"), vwidth=1992, vheight=1744, delay=10)
 }
 
-
+# method1
 list(wordclouds_to_export=wordcloud_list, wordcloud_names=names(wordcloud_list)) %>% 
         pmap(output_wordclouds)
+
+#method2
+map2(.x=wordcloud_list, .y=names(wordcloud_list), .f=output_wordclouds)
+
+
+
+
+# Appendix ----------------------------------------------------------------
+
+# iterate word cloud generation using pmap instead of map2
+
+handles<-c("kingJames", "paulKrugman", "elonmusk")
+number=c(400)
+wordcloud_list_alt<-pmap(list(handles, number), twitter_wordcloud)
+wordcloud_list_alt<-pmap(list(twitterhandle=handles, tweet_number=number), twitter_wordcloud)
+
+list(twitterhandle=handles, tweet_number=number) %>% pmap(twitter_wordcloud)
+
+# iteratively write out using map2 instead of pmap
+map2(.x=wordcloud_list, .y=names(wordcloud_list), .f=output_wordclouds)
+
+
+
+
+
 
 
 maya_wordcloud<-twitter_wordcloud("maya_ranganath", 400)
