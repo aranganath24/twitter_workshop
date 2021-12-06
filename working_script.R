@@ -5,6 +5,8 @@ library(tidytext)
 library(wordcloud2)
 library(qdapRegex)
 library(tm)
+library(webshot)
+library(htmlwidgets)
 
 
 # Pulling Data from API ---------------------------------------------------
@@ -143,6 +145,21 @@ handles<-c("kingJames", "paulKrugman", "elonmusk")
 number<-c(400)
 
 wordcloud_list<-map2(.x=handles, .y=number, twitter_wordcloud)
+
+# writing files
+
+install_phantomjs()
+saveWidget(elon_wordcloud, "elon.html", selfcontained = F)
+webshot("elon.html", "elon.png", vwidth=1992, vheight=1744, delay=10)
+
+
+
+
+
+
+
+
+https://martinctc.github.io/blog/vignette-write-and-read-multiple-excel-files-with-purrr/
 
 
 
