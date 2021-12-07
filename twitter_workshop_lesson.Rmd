@@ -84,9 +84,51 @@ student_debt_OR_capitalism_tweets<-search_tweets(q="#CancelStudentDebt OR capita
 blm_tweets<-get_timeline("@Blklivesmatter", n=3200)
 ```
 
-### 2.1: Yest 
+## 3. Clean, Organize, and Query Twitter Datasets
+
+## 4. Visualize Data
+
+### 4a. Time Series
+
+### 4b. Word Cloud
+
+```{r, fig.asp=0.5}
+blm_text<-str_c(blm_tweets$text, collapse="")
 
 
+blm_text <- 
+  blm_text %>%
+  str_remove("\\n") %>%                   # remove linebreaks
+  rm_twitter_url() %>%                    # Remove URLS
+  rm_url() %>%
+  str_remove_all("#\\S+") %>%             # Remove any hashtags
+  str_remove_all("@\\S+") %>%             # Remove any @ mentions
+  removeWords(stopwords("english")) %>%   # Remove common words (a, the, it etc.)
+  removeNumbers() %>%
+  stripWhitespace() %>%
+  removeWords(c("amp"))                   # Final cleanup of other small changes
+
+
+textCorpus <- 
+  Corpus(VectorSource(blm_text)) %>%
+  TermDocumentMatrix() %>%
+  as.matrix()
+
+textCorpus <- sort(rowSums(textCorpus), decreasing=TRUE)
+textCorpus <- data.frame(word = names(textCorpus), freq=textCorpus, row.names = NULL)
+
+wordcloud_blm <- wordcloud2(data = textCorpus, minRotation = 0, maxRotation = 0, ellipticity = 0.2)
+```
+
+
+```{r, fig.asp=0.5}
+set.seed(1234)
+wordcloud_blm
+```
+
+## 5. Writing Functions and Automating Your Twitter Analysis
+
+### 5a. Wrap the code to create a word cloud into a function 
 
 ```{r}
 twitter_wordcloud<-function(twitterhandle, tweet_number){
@@ -120,12 +162,20 @@ twitter_wordcloud<-function(twitterhandle, tweet_number){
 
 ```
 
-
+### 5b. Test the function 
 
 ```{r}
-lebron_wordcloud<-twitter_wordcloud("KingJames", 400)
-elon_wordcloud<-twitter_wordcloud("elonmusk", 400)
+nyt_wordcloud<-twitter_wordcloud("KingJames", 400)
 ```
+
+### 5c. Iteratively Apply the Function to Multiple Twitter Handles
+
+
+
+
+
+
+
 
 
 ```{r}
