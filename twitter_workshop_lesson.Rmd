@@ -3,17 +3,17 @@ title: "Introduction to Twitter Data in R"
 author: "Aditya Ranganath"
 date: "12/6/2021"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, warning=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+## Load Libraries
 
-```{r}
+```{r, message=FALSE}
 library(rtweet)
 library(httpuv)
 library(tidyverse)
@@ -21,7 +21,69 @@ library(tidytext)
 library(wordcloud2)
 library(qdapRegex)
 library(tm)
+library(webshot)
+library(htmlwidgets)
 ```
+
+## Pull Data from the Twitter API via *rtweet* Package
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Add twitter datasets to avoid calling API in markdown file
+setwd("/Users/adra7980/Documents/git_repositories/twitter_workshop/exported_data")
+student_debt_tweets<-read_csv("student_debt_tweets.csv")
+student_debt_capitalism_tweets<-read_csv("student_debt_capitalism_tweets.csv")
+student_debt_capitalism_tweets_ALT<-read_csv("student_debt_capitalism_tweets_ALT.csv")
+student_debt_OR_capitalism_tweets<-read_csv("student_debt_OR_capitalism_tweets.csv")
+blm_tweets<-read_csv("blm_tweets.csv")
+```
+
+
+```{r, eval=F}
+# Pull tweets with #CancelStudentDebt; returns 1000 most recent tweets; time by GMT
+student_debt_tweets<-search_tweets(q="#CancelStudentDebt", 
+                                   n=1000,
+                                   include_rts=FALSE,
+                                   `-filter`="replies",
+                                   lang="en")
+```
+
+```{r, eval=F}
+# Pull tweets with #CancelStudentDebt AND capitalism
+student_debt_capitalism_tweets<-search_tweets(q="#CancelStudentDebt capitalism", 
+                                              n=1000,
+                                              include_rts=FALSE,
+                                              `-filter`="replies",
+                                              lang="en")
+```
+
+```{r, eval=F}
+# Insteading of pulling from the API, you could also pull tweets with #CancelStudentDebt, and then query the text
+# of these tweets locally using a stringr function
+
+student_debt_capitalism_tweets_ALT<-student_debt_tweets %>% 
+                                     filter(str_detect(text, "[Cc]apitalism"))
+```
+
+
+```{r, eval=F}
+# Pull tweets with #CancelStudentDebt OR capitalism
+
+student_debt_OR_capitalism_tweets<-search_tweets(q="#CancelStudentDebt OR capitalism", 
+                                                 n=1000,
+                                                 include_rts=FALSE,
+                                                 `-filter`="replies",
+                                                 lang="en")
+```
+
+
+```{r, eval=F}
+# # Pull tweets from an account (doesn't have same time constraints)
+# Pull last 3200 BLM tweets (note sometimes the query will return less than 3200 due to deletions)
+blm_tweets<-get_timeline("@Blklivesmatter", n=3200)
+```
+
+
+
 
 ```{r}
 twitter_wordcloud<-function(twitterhandle, tweet_number){
