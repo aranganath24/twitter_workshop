@@ -154,16 +154,15 @@ names(wordcloud_list)<-handles
 wordcloud_list[["paulKrugman"]]
 wordcloud_list[[2]]
 
-
 # writing files
 
 install_phantomjs()
 saveWidget(elon_wordcloud, "elon.html", selfcontained = F)
 webshot("elon.html", "elon.png", vwidth=1992, vheight=1744, delay=10)
 
-
 # iterate writing out files
 
+# write function
 output_wordclouds<-function(wordclouds_to_export, wordcloud_names){
   setwd("~/Documents/git_repositories/twitter_workshop")
   install_phantomjs()
@@ -171,14 +170,8 @@ output_wordclouds<-function(wordclouds_to_export, wordcloud_names){
   webshot(paste0(wordcloud_names, ".html"), paste0(wordcloud_names, ".png"), vwidth=1992, vheight=1744, delay=10)
 }
 
-# method1
-list(wordclouds_to_export=wordcloud_list, wordcloud_names=names(wordcloud_list)) %>% 
-        pmap(output_wordclouds)
-
-#method2
+# iterate function across word clouds in list
 map2(.x=wordcloud_list, .y=names(wordcloud_list), .f=output_wordclouds)
-
-
 
 
 # Appendix ----------------------------------------------------------------
@@ -189,26 +182,12 @@ handles<-c("kingJames", "paulKrugman", "elonmusk")
 number=c(400)
 wordcloud_list_alt<-pmap(list(handles, number), twitter_wordcloud)
 wordcloud_list_alt<-pmap(list(twitterhandle=handles, tweet_number=number), twitter_wordcloud)
-
+# alt syntax
 list(twitterhandle=handles, tweet_number=number) %>% pmap(twitter_wordcloud)
 
-# iteratively write out using map2 instead of pmap
-map2(.x=wordcloud_list, .y=names(wordcloud_list), .f=output_wordclouds)
-
-
-
-
-
-
-
-maya_wordcloud<-twitter_wordcloud("maya_ranganath", 400)
-cu_libraries<-twitter_wordcloud("cublibraries", 400)
-
-
-
-
-https://martinctc.github.io/blog/vignette-write-and-read-multiple-excel-files-with-purrr/
-
+# iteratively write out using pmap instead of map2
+list(wordclouds_to_export=wordcloud_list, wordcloud_names=names(wordcloud_list)) %>% 
+  pmap(output_wordclouds)
 
 
 
