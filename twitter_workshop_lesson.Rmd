@@ -116,14 +116,22 @@ textCorpus <-
 
 textCorpus <- sort(rowSums(textCorpus), decreasing=TRUE)
 textCorpus <- data.frame(word = names(textCorpus), freq=textCorpus, row.names = NULL)
+textCorpus<-textCorpus %>% filter(word!="the")
 
 wordcloud_blm <- wordcloud2(data = textCorpus, minRotation = 0, maxRotation = 0, ellipticity = 0.2)
 ```
 
 
 ```{r, fig.asp=0.5}
-set.seed(1234)
 wordcloud_blm
+```
+
+You can write out your word cloud to disk with the following:
+
+```{r, eval=FALSE}
+install_phantomjs()
+saveWidget(wordcloud_blm, "blm.html", selfcontained = F)
+webshot("blm.html", "blm.png", vwidth=1000, vheight=1000, delay=10)
 ```
 
 ## 5. Writing Functions and Automating Your Twitter Analysis
@@ -134,19 +142,22 @@ wordcloud_blm
 twitter_wordcloud<-function(twitterhandle, tweet_number){
   tweet_timeline<-get_timeline(twitterhandle, n=tweet_number)
   tweet_timeline_text<-str_c(tweet_timeline$text, collapse="")
-  tweet_timeline_text<-str_remove_all(tweet_timeline_text, pattern='[:emoji:]')
-  tweet_timeline_text<-tweet_timeline_text %>%
-                              str_remove("\\n") %>%                   # remove linebreaks
-                              rm_twitter_url() %>%                    # Remove URLS
-                              rm_url() %>%
-                              str_remove_all("#\\S+") %>%             # Remove any hashtags
-                              str_remove_all("@\\S+") %>%             # Remove any @ mentions
-                              removeWords(stopwords("english")) %>%   # Remove common words (a, the, it etc.)
-                              removeNumbers() %>%
-                              stripWhitespace() %>%
-                              removeWords(c("amp")) %>% 
-                              removePunctuation()
 
+    tweet_timeline_text<-tweet_timeline_text %>%
+    str_remove("\\n") %>%                   # remove linebreaks
+    rm_twitter_url() %>%                    # Remove URLS
+    rm_url() %>%
+    str_remove_all("#\\S+") %>%             # Remove any hashtags
+    str_remove_all("@\\S+") %>%             # Remove any @ mentions
+    removeWords(stopwords("english")) %>%   # Remove common words (a, the, it etc.)
+    removeNumbers() %>%
+    stripWhitespace() %>%
+    removeWords(c("amp")) %>% 
+    removePunctuation() %>% 
+    str_remove_all(pattern='[Tt]he') %>% 
+    str_remove_all(pattern='[:emoji:]')
+    
+  
   textCorpus <- 
     Corpus(VectorSource(tweet_timeline_text)) %>%
     TermDocumentMatrix() %>%
@@ -154,46 +165,94 @@ twitter_wordcloud<-function(twitterhandle, tweet_number){
   
   textCorpus <- sort(rowSums(textCorpus), decreasing=TRUE)
   textCorpus <- data.frame(word = names(textCorpus), freq=textCorpus, row.names = NULL)
-  
+
   wordcloud <- wordcloud2(data = textCorpus, minRotation = 0, maxRotation = 0, ellipticity = 0.2)
   return(wordcloud)
   
 }
+
 
 ```
 
 ### 5b. Test the function 
 
 ```{r}
-nyt_wordcloud<-twitter_wordcloud("KingJames", 400)
+# Generate word cloud for past 400 NYT twitter posts, assign to object, and view word cloud
+nyt_wordcloud<-twitter_wordcloud("nytimes", 400)
+```
+
+```{r, eval=FALSE}
+# View NYT wordcloud 
+nyt_wordcloud
+```
+
+```{r, echo=F}
+setwd("~/Documents/git_repositories/twitter_workshop")
+knitr::include_graphics("images/nyt.png")
 ```
 
 ### 5c. Iteratively Apply the Function to Multiple Twitter Handles
 
-
-
-
-
-
-
-
+Apply the "twitter_wordcloud" function created above to multiple handles, and generate multiple word clouds based on those handles. We'll apply the function to the Twitter handles of the New York Times, Financial Times, Washington Post, Fox News, CNN, and the Denver Post. 
 
 ```{r}
-elon_wordcloud
+handles<-c("nytimes", "FinancialTimes", "FoxNews", "cnn", "washingtonpost", "denverpost")
+number<-c(400)
+wordcloud_list<-map2(.x=handles, .y=number, twitter_wordcloud)
 ```
 
-## next
+View the Washington Post word cloud by accessing it from the list:
 
-
-ddddddddsfadfa
-dafafadfafc
-
-```{r}
-lebron_wordcloud<-twitter_wordcloud("KingJames", 400)
-lebron_wordcloud
+```{r, eval=FALSE}
+# View Washington Post Word Cloud
+wordcloud_list[["washingtonpost"]]
 ```
 
-https://github.com/Lchiffon/wordcloud2/issues/65
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.asp=0.5}
+setwd("~/Documents/git_repositories/twitter_workshop")
+knitr::include_graphics("images/wapo.png")
+```
+
+View the Denver Post word cloud by accessing from the list: 
+
+```{r, eval=FALSE}
+# View Denver Post word cloud by extracting it from the list
+wordcloud_list[["denverpost"]]
+```
+
+```{r, echo=T, fig.asp=0.5}
+setwd("~/Documents/git_repositories/twitter_workshop")
+knitr::include_graphics("images/denverpost.png")
+```
+
+What would you type if you want to extract the Financial Times word cloud from the list? 
+
+### 5d. Iteratively Write Out All of the Media Word Clouds to Disk
+
+```{r, message=F, eval=F}
+# Write function that takes list of word clouds, and word cloud names, and writes WC out to tisk
+output_wordclouds<-function(wordclouds_to_export, wordcloud_names){
+  setwd("/Users/adra7980/Documents/git_repositories/twitter_workshop/wordclouds")
+  install_phantomjs()
+  saveWidget(wordclouds_to_export, paste0(wordcloud_names, ".html"), selfcontained=F)
+  webshot(paste0(wordcloud_names, ".html"), paste0(wordcloud_names, ".png"), vwidth=1992, vheight=1744, delay=10)
+}
+```
+
+```{r, message=F, eval=F}
+# iteratively apply previous function across word clouds in list and write all to disk
+map2(.x=wordcloud_list, .y=names(wordcloud_list), .f=output_wordclouds)
+```
+
+
+
+
+
+
+
+
+
+
 
 
 

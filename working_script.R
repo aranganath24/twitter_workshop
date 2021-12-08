@@ -96,18 +96,10 @@ wordcloud
 # Wrap word cloud code into a function that takes twitter account, n, and generates word cloud
 
 twitter_wordcloud<-function(twitterhandle, tweet_number){
-  handle_as_string<-deparse(substitute(twitterhandle))
-  tweet_timeline<-get_timeline(handle_as_string, n=tweet_number)
-  return(tweet_timeline)
-}
-
-  
-lebron_james<-twitter_wordcloud(KingJames, 100)
-
-twitter_wordcloud<-function(twitterhandle, tweet_number){
   tweet_timeline<-get_timeline(twitterhandle, n=tweet_number)
   tweet_timeline_text<-str_c(tweet_timeline$text, collapse="")
   tweet_timeline_text<-str_remove_all(tweet_timeline_text, pattern='[:emoji:]')
+  tweet_timeline_text<-str_remove_all(tweet_timeline_text, pattern='[Tt]he')
   tweet_timeline_text<-tweet_timeline_text %>%
                               str_remove("\\n") %>%                   # remove linebreaks
                               rm_twitter_url() %>%                    # Remove URLS
@@ -127,13 +119,12 @@ twitter_wordcloud<-function(twitterhandle, tweet_number){
   
   textCorpus <- sort(rowSums(textCorpus), decreasing=TRUE)
   textCorpus <- data.frame(word = names(textCorpus), freq=textCorpus, row.names = NULL)
+  textCorpus<-textCorpus %>% filter(word!="the")
   
   wordcloud <- wordcloud2(data = textCorpus, minRotation = 0, maxRotation = 0, ellipticity = 0.2)
   return(wordcloud)
   
 }
-
-
 
 # test function 
 lebron_wordcloud<-twitter_wordcloud("KingJames", 400)
@@ -190,19 +181,6 @@ list(wordclouds_to_export=wordcloud_list, wordcloud_names=names(wordcloud_list))
   pmap(output_wordclouds)
 
 
-
-
-
-blm_retweets<-blm_tweets %>% filter(is_retweet==TRUE)
-View(blm_retweets)
-
-blm_original_tweets<-blm_tweets %>% filter(is_retweet==FALSE)
-
-
-
-data_for_blacklives<-get_timeline("@Data4BlackLives", n=3200)
-
-@Data4BlackLives
 
 
 
