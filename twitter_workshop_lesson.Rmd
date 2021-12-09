@@ -25,7 +25,7 @@ library(qdapRegex)
 library(tm)
 library(webshot)
 library(htmlwidgets)
-library(knitr)
+library(ggplot2)
 ```
 
 ## 2. Pull Data from the Twitter API via *rtweet* Package
@@ -139,6 +139,14 @@ student_debt_tweets_frequentweeters<-student_debt_tweets %>%
 ```
 
 ### 3.7 Query the data to find the 10 hashtags appearing most frequently in conjunction with #CancelStudentDebt
+```{r, echo=FALSE}
+student_debt_tweets<-search_tweets(q="#CancelStudentDebt", 
+                                   n=1000,
+                                   include_rts=FALSE,
+                                   `-filter`="replies",
+                                   lang="en")
+```
+
 
 ```{r}
 CancelStudentDebt_coinciding_hashtags<-student_debt_tweets %>% 
@@ -152,16 +160,27 @@ CancelStudentDebt_coinciding_hashtags<-student_debt_tweets %>%
 
 ```
 
-
-
-
-
-
-
-
-
-
 ## 4. Visualize Data
+
+### 4.1 Using ggplot to make visualizations of twitter data: bar graph of coincident hashtags
+
+
+```{r}
+CancelStudentDebt_coinciding_hashtags<-CancelStudentDebt_coinciding_hashtags %>% 
+                                        mutate(hashtag=paste0("#", hashtags))
+
+coincident_hashtags_plot<-
+  ggplot(CancelStudentDebt_coinciding_hashtags, aes(x=reorder(hashtag, n), y=n))+
+    geom_bar(stat="identity")+
+      coord_flip()+
+      xlab("")+
+      ylab("Number of Ocurrences with #CancelStudentDebt")+
+      ggtitle("Hashtags Most Frequently Used Along With #CancelStudentDebt")
+```
+
+```{r}
+coincident_hashtags_plot
+```
 
 ### 4a. Time Series
 
