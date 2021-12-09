@@ -106,9 +106,12 @@ CancelStudentDebt_coinciding_hashtags<-student_debt_tweets %>%
 
 
 
-ggplot(CancelStudentDebt_coinciding_hashtags, aes(x=hashtags, y=n))+
+ggplot(CancelStudentDebt_coinciding_hashtags, aes(x=reorder(hashtags, n), y=n))+
   geom_bar(stat="identity")+
-  coord_flip()
+  coord_flip()+
+  xlab("")+
+  ylab("Number of Ocurrences with #CancelStudentDebt")+
+  ggtitle("Test")
 
 # Visualizing and Exploring Data ------------------------------------------
 
