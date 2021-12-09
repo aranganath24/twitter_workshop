@@ -30,12 +30,15 @@ student_debt_capitalism_tweets<-search_tweets(q="#CancelStudentDebt capitalism",
                                               include_rts=FALSE,
                                               `-filter`="replies",
                                               lang="en")
+View(student_debt_capitalism_tweets)
 
 # Insteading of pulling from the API, you could also pull tweets with #CancelStudentDebt, and then query the text
 # of these tweets locally using a stringr function
 
 student_debt_capitalism_tweets_ALT<-student_debt_tweets %>% 
                                       filter(str_detect(text, "[Cc]apitalism"))
+
+View(student_debt_capitalism_tweets_ALT)
 
 # Pull tweets with #CancelStudentDebt OR capitalism
 
@@ -59,6 +62,7 @@ View(blm_tweets)
 # Querying blm_tweets to find the 10 tweets with the most favorites
 
 blm_tweets_most_favorited<-blm_tweets %>% slice_max(favorite_count, n=10)
+View(blm_tweets_most_favorited)
 
 # Remove unnecessary columns from "blm_tweets_most_favorited"
 
@@ -74,6 +78,8 @@ blm_tweets_most_retweeted<-blm_tweets %>%
                               slice_max(retweet_count, n=10) %>% 
                               select(created_at, screen_name, text, retweet_count)
 
+View(blm_tweets_most_retweeted)
+
 
 # Remove retweets from blm_tweets
 blm_tweets_noretweets<-blm_tweets %>% filter(is_retweet=="FALSE")
@@ -84,14 +90,16 @@ blm_tweets_links_top5<-blm_tweets %>% filter(!is.na(urls_expanded_url)) %>%
                                       count(urls_expanded_url, sort = TRUE) %>% 
                                       rename(times_shared=n) %>% 
                                       slice_max(times_shared, n=5)
-                      
 
+View(blm_tweets_links_top5)
 
 # Query the data to find the 5 handles that have most frequently used #CancelStudentLoan
 
 student_debt_tweets_frequentweeters<-student_debt_tweets %>% 
                                       count(screen_name) %>% 
                                       slice_max(n, n=5)
+
+View(student_debt_tweets_frequentweeters)
 
 # Query the data to find the 10 hashtags appearing most frequently in conjunction with 
 # #CancelStudentDebt
@@ -105,9 +113,7 @@ CancelStudentDebt_coinciding_hashtags<-student_debt_tweets %>%
                                           count(hashtags) %>% 
                                           slice_max(n, n=10)
 
-
-
-
+View(CancelStudentDebt_coinciding_hashtags)
 
 # Visualizing and Exploring Data ------------------------------------------
 
