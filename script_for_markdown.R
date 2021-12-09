@@ -29,16 +29,11 @@ student_debt_capitalism_tweets<-search_tweets(q="#CancelStudentDebt capitalism",
                                               `-filter`="replies",
                                               lang="en")
 
-write_as_csv(student_debt_capitalism_tweets, "student_debt_capitalism_tweets.csv")
-
-
 # Insteading of pulling from the API, you could also pull tweets with #CancelStudentDebt, and then query the text
 # of these tweets locally using a stringr function
 
 student_debt_capitalism_tweets_ALT<-student_debt_tweets %>% 
-  filter(str_detect(text, "[Cc]apitalism"))
-
-write_as_csv(student_debt_capitalism_tweets_ALT, "student_debt_capitalism_tweets_ALT")
+                                      filter(str_detect(text, "[Cc]apitalism"))
 
 # Pull tweets with #CancelStudentDebt OR capitalism
 
@@ -50,20 +45,50 @@ student_debt_OR_capitalism_tweets<-search_tweets(q="#CancelStudentDebt OR capita
 
 View(student_debt_OR_capitalism_tweets)
 
-write_as_csv(student_debt_OR_capitalism_tweets, "student_debt_OR_capitalism_tweets")
-
-
 # Pull tweets from an account (doesn't have same time constraints)
 # Pull last 3200 BLM tweets
-blm_tweets<-get_timeline("@Blklivesmatter", n=3200)
-View(blm_tweets) # Note that there are only 3174, not 3200; that's because of deletions made on the feed
-write_as_csv(blm_tweets, "blm_tweets")
+blm_tweets<-get_timeline("Blklivesmatter", n=3200)
+
+# View blm_tweets dataset Note that there are only 3174, not 3200; that's because of deletions made on the feed
+View(blm_tweets)
+
+# Cleaning, Organizing, and Querying Downloaded Twitter Datasets -----------------------------
+
+# Querying blm_tweets to find the 10 tweets with the most favorites
+
+blm_tweets_most_favorited<-blm_tweets %>% slice_max(favorite_count, n=10)
+
+# Remove unnecessary columns from "blm_tweets_most_favorited"
+
+blm_tweets_most_favorited<- blm_tweets_most_favorited %>% 
+                              select(created_at, screen_name, text, favorite_count)
+
+View(blm_tweets_most_favorited)
+
+# Query blm_tweets to find the 10 tweets with the most retweets and then select 
+# desired columns in one block of code
+
+blm_tweets_most_retweeted<-blm_tweets %>% 
+                              slice_max(retweet_count, n=10) %>% 
+                              select(created_at, screen_name, text, retweet_count)
 
 
-# Cleaning and Organizing Downloaded Datasets -----------------------------
+# Remove retweets from blm_tweets
+blm_tweets_noretweets<-blm_tweets %>% filter(is_retweet=="FALSE")
+
+# Query Data to find 5 most frequently shared links from blm_tweets
+
+blm_tweets_links_top5<-blm_tweets %>% filter(!is.na(urls_expanded_url)) %>% 
+                                      count(urls_expanded_url, sort = TRUE) %>% 
+                                      rename(times_shared=n) %>% 
+                                      slice_max(times_link_shared, n=5)
+                      
+
+
+
+
 
 # Visualizing and Exploring Data ------------------------------------------
-
 
 
 ## BLM Word Cloud 
