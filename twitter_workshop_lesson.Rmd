@@ -174,15 +174,28 @@ coincident_hashtags_plot<-
     geom_bar(stat="identity")+
       coord_flip()+
       xlab("")+
-      ylab("Number of Ocurrences with #CancelStudentDebt")+
-      ggtitle("Hashtags Most Frequently Used Along With #CancelStudentDebt")
+      ylab("Frequency")+
+      ggtitle("Hashtags Most Frequently Used Along With #CancelStudentDebt")+
+      labs(caption = "Data Collected from Twitter REST API via rtweet")
 ```
 
 ```{r}
 coincident_hashtags_plot
 ```
 
-### 4a. Time Series
+### 4.2. Using rtweet's visualization functions: time series example
+
+```{r}
+ts_plot(student_debt_tweets, "hours") +
+  labs(x = NULL, y = NULL,
+       title = "Frequency of tweets with a #CancelStudentDebt hashtag",
+       subtitle = paste0(format(min(student_debt_tweets$created_at), "%d %B %Y"), 
+                         " to ",  
+                         format(max(student_debt_tweets$created_at),"%d %B %Y")),
+       caption = "Data collected from Twitter's REST API via rtweet") +
+  theme_minimal()
+```
+
 
 ### 4b. Word Cloud
 
