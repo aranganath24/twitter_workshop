@@ -81,12 +81,34 @@ blm_tweets_noretweets<-blm_tweets %>% filter(is_retweet=="FALSE")
 blm_tweets_links_top5<-blm_tweets %>% filter(!is.na(urls_expanded_url)) %>% 
                                       count(urls_expanded_url, sort = TRUE) %>% 
                                       rename(times_shared=n) %>% 
-                                      slice_max(times_link_shared, n=5)
+                                      slice_max(times_shared, n=5)
                       
 
 
+# Query the data to find the 5 handles that have most frequently used #CancelStudentLoan
+
+student_debt_tweets_frequentweeters<-student_debt_tweets %>% 
+                                      count(screen_name) %>% 
+                                      slice_max(n, n=5)
+
+# Query the data to find the 10 hashtags appearing most frequently in conjunction with 
+# #CancelStudentDebt
+
+CancelStudentDebt_coinciding_hashtags<-student_debt_tweets %>% 
+                                          select(hashtags) %>% 
+                                          unnest(hashtags) %>%
+                                          mutate(hashtag_cleaned=str_to_lower(hashtags)) %>% 
+                                          filter(hashtag_cleaned!="cancelstudentdebt") %>% 
+                                          select(-hashtag_cleaned) %>% 
+                                          count(hashtags) %>% 
+                                          slice_max(n, n=10)
 
 
+
+
+ggplot(CancelStudentDebt_coinciding_hashtags, aes(x=hashtags, y=n))+
+  geom_bar(stat="identity")+
+  coord_flip()
 
 # Visualizing and Exploring Data ------------------------------------------
 
