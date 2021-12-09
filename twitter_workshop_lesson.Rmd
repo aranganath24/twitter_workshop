@@ -28,6 +28,7 @@ library(htmlwidgets)
 library(ggplot2)
 library(sf)
 library(tmap)
+library(knitr)
 ```
 
 ## 2. Pull Data from the Twitter API via *rtweet* Package
@@ -222,6 +223,8 @@ tm_shape(student_debt_tweets_latlong_extract)+
 
 ### 4.4. Make a Word Cloud of a Twitter Handle
 
+First, prepare a word frequency table: 
+
 ```{r, fig.asp=0.5}
 blm_text<-str_c(blm_tweets$text, collapse="")
 
@@ -236,8 +239,10 @@ blm_text <-
   removeWords(stopwords("english")) %>%   # Remove common words (a, the, it etc.)
   removeNumbers() %>%
   stripWhitespace() %>%
-  removeWords(c("amp"))                   # Final cleanup of other small changes
-
+  removeWords(c("amp", "the")) %>% 
+  removePunctuation() %>% 
+  str_remove_all(pattern='[Tt]he') %>% 
+  str_remove_all(pattern='[:emoji:]')
 
 textCorpus <- 
   Corpus(VectorSource(blm_text)) %>%
@@ -246,13 +251,17 @@ textCorpus <-
 
 textCorpus <- sort(rowSums(textCorpus), decreasing=TRUE)
 textCorpus <- data.frame(word = names(textCorpus), freq=textCorpus, row.names = NULL)
-textCorpus<-textCorpus %>% filter(word!="the")
+View(textCorpus)
 
-wordcloud_blm <- wordcloud2(data = textCorpus, minRotation = 0, maxRotation = 0, ellipticity = 0.2)
 ```
 
+```{r, echo=FALSE}
+kable(head(textCorpus), n=5)
+```
 
+Make a word cloud using the word frequency table
 ```{r, fig.asp=0.5}
+wordcloud_blm <- wordcloud2(data = textCorpus, minRotation = 0, maxRotation = 0, ellipticity = 0.2)
 wordcloud_blm
 ```
 
@@ -265,6 +274,8 @@ webshot("blm.html", "blm.png", vwidth=1000, vheight=1000, delay=10)
 ```
 
 ## 5. Writing Functions and Automating Your Twitter Analysis
+
+Let's say you expect to build a lot of word clouds, and don't want to keep copy pasting your code. At that point, it makes sense to write a function that'll automatically create a word cloud, based on the inputs (twitter handle, number of tweets to pull from the API, upto 3200) that you supply.
 
 ### 5a. Wrap the code to create a word cloud into a function 
 

@@ -167,9 +167,8 @@ blm_text <-
   stripWhitespace() %>%
   removeWords(c("amp", "the")) %>% 
   removePunctuation() %>% 
-  str_remove_all(tweet_timeline_text, pattern='[Tt]he') %>% 
-  str_remove_all(tweet_timeline_text, pattern='[:emoji:]')
-
+  str_remove_all(pattern='[Tt]he') %>% 
+  str_remove_all(pattern='[:emoji:]')
 
 textCorpus <- 
   Corpus(VectorSource(blm_text)) %>%
@@ -178,7 +177,8 @@ textCorpus <-
 
 textCorpus <- sort(rowSums(textCorpus), decreasing=TRUE)
 textCorpus <- data.frame(word = names(textCorpus), freq=textCorpus, row.names = NULL)
-textCorpus<-textCorpus %>% filter(word!="the")
+
+View(textCorpus)
 
 wordcloud_blm <- wordcloud2(data = textCorpus, minRotation = 0, maxRotation = 0, ellipticity = 0.2)
 wordcloud_blm
