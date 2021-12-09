@@ -126,7 +126,7 @@ blm_tweets_noretweets<-blm_tweets %>% filter(is_retweet=="FALSE")
 blm_tweets_links_top5<-blm_tweets %>% filter(!is.na(urls_expanded_url)) %>% 
                                       count(urls_expanded_url, sort = TRUE) %>% 
                                       rename(times_shared=n) %>% 
-                                      slice_max(times_link_shared, n=5)
+                                      slice_max(times_shared, n=5)
                       
 ```
 
