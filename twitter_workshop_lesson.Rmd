@@ -26,6 +26,8 @@ library(tm)
 library(webshot)
 library(htmlwidgets)
 library(ggplot2)
+library(sf)
+library(tmap)
 ```
 
 ## 2. Pull Data from the Twitter API via *rtweet* Package
@@ -196,8 +198,29 @@ ts_plot(student_debt_tweets, "hours") +
   theme_minimal()
 ```
 
+### 4.3 Mapping Tweets
+```{r}
+# Extract lat/longs
+student_debt_tweets<-student_debt_tweets %>% lat_lng()
 
-### 4b. Word Cloud
+# remove records without geotags
+student_debt_tweets_latlong_extract<-student_debt_tweets %>% 
+                                      filter(is.na(lat) == FALSE & is.na(lng) == FALSE)
+
+# create sf object from tweet dataset
+student_debt_tweets_latlong_extract<-student_debt_tweets_latlong_extract %>% 
+                                      st_as_sf(coords=c("lng", "lat")) %>% 
+                                      st_set_crs("EPSG:4326")
+
+# set tmap to view mode
+tmap_mode("view")
+
+# make map
+tm_shape(student_debt_tweets_latlong_extract)+
+  tm_dots()
+```
+
+### 4.4. Make a Word Cloud of a Twitter Handle
 
 ```{r, fig.asp=0.5}
 blm_text<-str_c(blm_tweets$text, collapse="")

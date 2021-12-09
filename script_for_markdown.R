@@ -7,6 +7,8 @@ library(qdapRegex)
 library(tm)
 library(webshot)
 library(htmlwidgets)
+library(tmap)
+library(sf)
 
 
 # Pulling Data from API ---------------------------------------------------
@@ -133,6 +135,20 @@ ts_plot(student_debt_tweets, "hours") +
        caption = "Data collected from Twitter's REST API via rtweet") +
   theme_minimal()
 
+## making a map of tweets
+
+# extract lat/longs
+student_debt_tweets<-student_debt_tweets %>% lat_lng()
+
+student_debt_tweets_latlong_extract<-student_debt_tweets %>% 
+                                      filter(is.na(lat) == FALSE & is.na(lng) == FALSE)
+
+student_debt_tweets_latlong_extract<-student_debt_tweets_latlong_extract %>% 
+                                      st_as_sf(coords=c("lng", "lat")) %>% 
+                                      st_set_crs("EPSG:4326")
+
+tm_shape(student_debt_tweets_latlong_extract)+
+  tm_dots()
 
 ## BLM Word Cloud 
 
