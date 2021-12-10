@@ -10,6 +10,7 @@ library(htmlwidgets)
 library(tmap)
 library(sf)
 
+install.packages(c("rtweet", "httpuv"))
 
 # Pulling Data from API ---------------------------------------------------
 
@@ -32,7 +33,7 @@ student_debt_capitalism_tweets<-search_tweets(q="#CancelStudentDebt capitalism",
                                               lang="en")
 View(student_debt_capitalism_tweets)
 
-# Insteading of pulling from the API, you could also pull tweets with #CancelStudentDebt, and then query the text
+# Instead of pulling from the API, you could also pull tweets with #CancelStudentDebt, and then query the text
 # of these tweets locally using a stringr function
 
 student_debt_capitalism_tweets_ALT<-student_debt_tweets %>% 
@@ -230,7 +231,9 @@ twitter_wordcloud<-function(twitterhandle, tweet_number){
 
 # test function
 nyt_wordcloud<-twitter_wordcloud("nytimes", 400)
-ft<-twitter_wordcloud("FinancialTimes", 400)
+nyt_wordcloud
+ft_wordcloud<-twitter_wordcloud("FinancialTimes", 400)
+ft_wordcloud
 
 # iterate WC generation 
 
