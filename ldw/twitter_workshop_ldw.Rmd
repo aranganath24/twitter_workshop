@@ -20,22 +20,13 @@ library(rtweet)
 library(httpuv)
 library(tidyverse)
 library(tidytext)
-library(wordcloud2)
-library(qdapRegex)
-library(tm)
-library(webshot)
-library(htmlwidgets)
-library(ggplot2)
-library(sf)
-library(tmap)
-library(knitr)
 ```
 
 Make sure you're logged onto twitter in a web browser
 
-# Pull Data from the Twitter API via *rtweet* Package
+# Extracting Data from the Twitter API via *rtweet* Package
 
-## Searching by hashtag
+## Extracting data by hashtag
 
 ```{r}
 # Pull tweets with #ValentinesDay; returns 1000 most recent tweets; time by GMT
@@ -51,7 +42,7 @@ valentine_tweets<-search_tweets(q="#ValentinesDay",
 valentine_tweets
 ```
 
-## Searching by multiple hashtags or keywords
+## Extracting by multiple hashtags or keywords
 
 ### "And" conditions 
 
@@ -89,7 +80,143 @@ valentinesday_OR_singlesawareness<-search_tweets(q="#ValentinesDay OR singlesday
 valentinesday_OR_singlesawareness
 ```
 
+## Searching twitter handles and extracting tweet history
 
+```{r}
+#Pull tweets from an account (doesn't have same time constraints)
+# Pull last 500 tweets from @VDay, a global activist movement to end violence against women that is associated with Valentine's day (note sometimes the query will return less than specified number due to deletions)
+vday_tweets<-get_timeline("@VDay", n=500)
+```
+
+```{r}
+# prints vday_tweets
+vday_tweets
+```
+
+# Querying twitter datasets
+
+## Querying ```vday_tweets``` to find the 10 tweets with most favorites
+
+```{r}
+# Extracts 10 most favorited tweets from "vday_tweets"
+vday_tweets_most_favorites<-vday_tweets %>% 
+                              slice_max(favorite_count, n=10)
+```
+
+```{r}
+# prints "vday_tweets_most_favorites"
+vday_tweets_most_favorites
+```
+
+## Querying ```vday_tweets``` to find the 10 tweets with most retweets
+
+```{r}
+# Extracts 10 most retweeted observations from "vday_tweets"
+vday_tweets_most_retweeted<-vday_tweets %>% 
+                              slice_max(retweet_count, n=10) %>% 
+                              select(created_at, screen_name, text, retweet_count)
+```
+
+
+```{r}
+# prints "vday_tweets_most_retweeted"
+vday_tweets_most_retweeted
+```
+
+
+# Querying ```vday_tweets``` to find 5 most frequently shared links from vday_tweets
+
+```{r}
+# extracts table with 5 most frequently shared links from the @Vday handle
+vday_links_top5<-vday_tweets %>% filter(!is.na(urls_expanded_url)) %>% 
+                                      count(urls_expanded_url, sort = TRUE) %>% 
+                                      rename(times_shared=n) %>% 
+                                      slice_max(times_shared, n=5) %>%
+                                      unnest(cols=urls_expanded_url)
+                                                                            
+```
+
+
+```{r}
+# prints "vday_links_top5"
+vday_links_top5
+```
+
+## Query ```valentine_tweets``` to find the 5 handles that have most frequently used hashtag ValentinesDay
+
+```{r}
+# extracts handles that most frequently used #ValentinesDay
+valentines_frequent_tweeters<-valentine_tweets %>% 
+                              count(screen_name) %>% 
+                              slice_max(n, n=5)
+```
+
+```{r}
+# prints "valentines_frequent_tweeters"
+valentines_frequent_tweeters
+```
+
+## Query ```valentine_tweets``` to find the 10 hashtags appearing most frequently in conjunction with hashtag ValentinesDay
+
+```{r}
+ValentinesDay_coinciding_hashtags<-valentine_tweets %>% 
+                                    select(hashtags) %>% 
+                                    unnest(hashtags) %>%
+                                    mutate(hashtag_cleaned=str_to_lower(hashtags)) %>% 
+                                    filter(hashtag_cleaned!="valentinesday") %>% 
+                                    select(-hashtag_cleaned) %>% 
+                                    count(hashtags) %>% 
+                                    slice_max(n, n=10)
+```
+
+
+```{r}
+ValentinesDay_coinciding_hashtags
+```
+
+# Visualizing Twitter data
+
+## Using ```ggplot``` to visualize twitter data 
+
+```{r}
+# creates new column that adds #
+CancelStudentDebt_coinciding_hashtags<-ValentinesDay_coinciding_hashtags %>% 
+                                        mutate(hashtag=paste0("#", hashtags))
+```
+
+
+```{r}
+# Makes inverted bar chart of "CancelStudentDebt_coinciding_hashtags"
+coincident_hashtags_plot<-
+  ggplot(CancelStudentDebt_coinciding_hashtags, aes(x=reorder(hashtag, n), y=n))+
+    geom_bar(stat="identity")+
+      coord_flip()+
+      xlab("")+
+      ylab("Frequency")+
+      ggtitle("Hashtags Most Frequently Used Along With #ValentinesDay")+
+      labs(caption = "Data Collected from Twitter REST API via rtweet")
+```
+
+```{r}
+# prints "coincident_hashtags_plot"
+coincident_hashtags_plot
+```
+
+## Using rtweet's visualization functions: time series
+
+```{r}
+# creates hourly time series of tweets with #ValentinesDay on February 17
+ts_plot(valentine_tweets, by="hours") +
+  labs(x = NULL, y = NULL,
+       title = "Frequency of tweets with #ValentinesDay",
+       subtitle = paste0(format(min(valentine_tweets$created_at), "%d %B %Y"), 
+                         " to ", 
+                         format(max(valentine_tweets$created_at),"%d %B %Y")),
+       caption = "Data collected from Twitter's REST API via rtweet") +
+  theme_minimal()
+```
+
+**Student Exercise: Select a hashtag, and make a visualization of the 15 most frequently along with your chosen hashtag**
 
 
 

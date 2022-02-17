@@ -1,18 +1,16 @@
+
+
+# Load Libraries and log into twitter-------------------------------------------------------------------------
+
 library(rtweet)
 library(httpuv)
 library(tidyverse)
 library(tidytext)
-library(wordcloud2)
-library(qdapRegex)
-library(tm)
-library(webshot)
-library(htmlwidgets)
-library(tmap)
-library(sf)
+
 
 # Make sure you're logged onto twitter in a web browser
 
-# Pulling Data from API ---------------------------------------------------
+# Extracting Data from the Twitter API via *rtweet* Package---------------------------------------------------
 
 # Pull tweets with #ValentinesDay; returns 1000 most recent tweets; time by GMT
 valentine_tweets<-search_tweets(q="#ValentinesDay", 
@@ -44,19 +42,109 @@ valentinesday_OR_singlesawareness<-search_tweets(q="#ValentinesDay OR singlesday
 View(valentinesday_OR_singlesawareness)
 
 
+#Pull tweets from an account (doesn't have same time constraints)
+# Pull last 500 tweets from @VDay, a global activist movement to end violence against women that is associated with Valentine's day (note sometimes the query will return less than specified number due to deletions)
+vday_tweets<-get_timeline("@VDay", n=500)
+
+View(vday_tweets)
+
+
+# Querying twitter datasets -----------------------------------------------
+
+# Extracts 10 most favorited tweets from "vday_tweets"
+vday_tweets_most_favorites<-vday_tweets %>% 
+                            slice_max(favorite_count, n=10)
+
+
+View(vday_tweets_most_favorites)
+
+
+# Remove unnecessary columns from "vday_tweets_most_favorites"
+
+vday_tweets_most_favorites<-vday_tweets_most_favorites %>% 
+                              select(created_at, screen_name, text, favorite_count)
+
+View(vday_tweets_most_favorites)
+
+
+# Extracts 10 most retweeted observations from "vday_tweets"
+vday_tweets_most_retweeted<-vday_tweets %>% 
+                              slice_max(retweet_count, n=10) %>% 
+                              select(created_at, screen_name, text, retweet_count)
+
+
+# prints "vday_tweets_most_retweeted"
+vday_tweets_most_retweeted
+
+
+# extracts table with 5 most frequently shared links from the @Vday handle
+vday_links_top5<-vday_tweets %>% filter(!is.na(urls_expanded_url)) %>% 
+                                count(urls_expanded_url, sort = TRUE) %>% 
+                                rename(times_shared=n) %>% 
+                                slice_max(times_shared, n=5) %>% 
+                                unnest(cols=urls_expanded_url)
+
+
+View(vday_links_top5)
+
+
+# Query "valentine_tweets" to find the 5 handles that have most frequently 
+#used #ValentinesDay
+
+valentines_frequent_tweeters<-valentine_tweets %>% 
+                              count(screen_name) %>% 
+                              slice_max(n, n=5)
+
+
+View(valentines_frequent_tweeters)
+
+
+# Query the data to find the 10 hashtags appearing most frequently in conjunction with 
+# #ValentinesDay
+
+ValentinesDay_coinciding_hashtags<-valentine_tweets %>% 
+                                    select(hashtags) %>% 
+                                    unnest(hashtags) %>%
+                                    mutate(hashtag_cleaned=str_to_lower(hashtags)) %>% 
+                                    filter(hashtag_cleaned!="valentinesday") %>% 
+                                    select(-hashtag_cleaned) %>% 
+                                    count(hashtags) %>% 
+                                    slice_max(n, n=10)
+
+View(ValentinesDay_coinciding_hashtags)
 
 
 
+# visualization -----------------------------------------------------------
+
+# creates new column that adds #
+ValentinesDay_coinciding_hashtags<-ValentinesDay_coinciding_hashtags %>% 
+                                          mutate(hashtag=paste0("#", hashtags))
 
 
 
+# Makes inverted bar chart of "CancelStudentDebt_coinciding_hashtags"
+coincident_hashtags_plot<-
+  ggplot(CancelStudentDebt_coinciding_hashtags, aes(x=reorder(hashtag, n), y=n))+
+  geom_bar(stat="identity")+
+  coord_flip()+
+  xlab("")+
+  ylab("Frequency")+
+  ggtitle("Hashtags Most Frequently Used Along With #ValentinesDay")+
+  labs(caption = "Data Collected from Twitter REST API via rtweet")
 
 
+coincident_hashtags_plot
 
-
-
-
-
+# Using rtweet's visualization functions: time series
+ts_plot(valentine_tweets, by="hours") +
+  labs(x = NULL, y = NULL,
+       title = "Frequency of tweets with #ValentinesDay",
+       subtitle = paste0(format(min(valentine_tweets$created_at), "%d %B %Y"), 
+                         " to ", 
+                         format(max(valentine_tweets$created_at),"%d %B %Y")),
+       caption = "Data collected from Twitter's REST API via rtweet") +
+  theme_minimal()
 
 
 
@@ -197,134 +285,4 @@ ts_plot(student_debt_tweets, "hours") +
        subtitle = paste0(format(min(student_debt_tweets$created_at), "%d %B %Y"), " to ", format(max(student_debt_tweets$created_at),"%d %B %Y")),
        caption = "Data collected from Twitter's REST API via rtweet") +
   theme_minimal()
-
-## making a map of tweets
-
-# extract lat/longs
-student_debt_tweets<-student_debt_tweets %>% lat_lng()
-
-student_debt_tweets_latlong_extract<-student_debt_tweets %>% 
-                                      filter(is.na(lat) == FALSE & is.na(lng) == FALSE)
-
-student_debt_tweets_latlong_extract<-student_debt_tweets_latlong_extract %>% 
-                                      st_as_sf(coords=c("lng", "lat")) %>% 
-                                      st_set_crs("EPSG:4326")
-
-tm_shape(student_debt_tweets_latlong_extract)+
-  tm_dots()
-
-## BLM Word Cloud 
-
-blm_text<-str_c(blm_tweets$text, collapse="")
-
-
-blm_text <- 
-  blm_text %>%
-  str_remove("\\n") %>%                   # remove linebreaks
-  rm_twitter_url() %>%                    # Remove URLS
-  rm_url() %>%
-  str_remove_all("#\\S+") %>%             # Remove any hashtags
-  str_remove_all("@\\S+") %>%             # Remove any @ mentions
-  removeWords(stopwords("english")) %>%   # Remove common words (a, the, it etc.)
-  removeNumbers() %>%
-  stripWhitespace() %>%
-  removeWords(c("amp", "the")) %>% 
-  removePunctuation() %>% 
-  str_remove_all(pattern='[Tt]he') %>% 
-  str_remove_all(pattern='[:emoji:]')
-
-textCorpus <- 
-  Corpus(VectorSource(blm_text)) %>%
-  TermDocumentMatrix() %>%
-  as.matrix()
-
-textCorpus <- sort(rowSums(textCorpus), decreasing=TRUE)
-textCorpus <- data.frame(word = names(textCorpus), freq=textCorpus, row.names = NULL)
-
-View(textCorpus)
-
-wordcloud_blm <- wordcloud2(data = textCorpus, minRotation = 0, maxRotation = 0, ellipticity = 0.2)
-wordcloud_blm
-
-# write out wordcloud_blm:
-
-install_phantomjs()
-saveWidget(wordcloud_blm, "blm.html", selfcontained = F)
-webshot("blm.html", "blm.png", vwidth=1000, vheight=1000, delay=10)
-
-# Write wc function
-
-twitter_wordcloud<-function(twitterhandle, tweet_number){
-  tweet_timeline<-get_timeline(twitterhandle, n=tweet_number)
-  tweet_timeline_text<-str_c(tweet_timeline$text, collapse="")
-  
-  tweet_timeline_text<-tweet_timeline_text %>%
-    str_remove("\\n") %>%                   # remove linebreaks
-    rm_twitter_url() %>%                    # Remove URLS
-    rm_url() %>%
-    str_remove_all("#\\S+") %>%             # Remove any hashtags
-    str_remove_all("@\\S+") %>%             # Remove any @ mentions
-    removeWords(stopwords("english")) %>%   # Remove common words (a, the, it etc.)
-    removeNumbers() %>%
-    stripWhitespace() %>%
-    removeWords(c("amp")) %>% 
-    removePunctuation() %>% 
-    str_remove_all(pattern='[Tt]he') %>% 
-    str_remove_all(pattern='[:emoji:]')
-  
-  textCorpus <- 
-    Corpus(VectorSource(tweet_timeline_text)) %>%
-    TermDocumentMatrix() %>%
-    as.matrix()
-  
-  textCorpus <- sort(rowSums(textCorpus), decreasing=TRUE)
-  textCorpus <- data.frame(word = names(textCorpus), freq=textCorpus, row.names = NULL)
-
-  wordcloud <- wordcloud2(data = textCorpus, minRotation = 0, maxRotation = 0, ellipticity = 0.2)
-  return(wordcloud)
-  
-}
-
-# test function
-nyt_wordcloud<-twitter_wordcloud("nytimes", 400)
-nyt_wordcloud
-ft_wordcloud<-twitter_wordcloud("FinancialTimes", 400)
-ft_wordcloud
-
-# iterate WC generation 
-
-# Iterate across handles for New York Times, Financial Times, 
-# Washington Post, Fox News, CNN, and the Denver Post. 
-
-handles<-c("nytimes", "FinancialTimes", "FoxNews", "cnn", "washingtonpost", "denverpost")
-number<-c(400)
-
-wordcloud_list<-map2(.x=handles, .y=number, twitter_wordcloud)
-
-# Assign names to list 
-names(wordcloud_list)<-handles
-
-# examine wc's 
-# nyt
-wordcloud_list[["nytimes"]]
-
-# FoxNews
-wordcloud_list[["FoxNews"]]
-
-# iterate writing out files
-
-# write function
-output_wordclouds<-function(wordclouds_to_export, wordcloud_names){
-  setwd("/Users/adra7980/Documents/git_repositories/twitter_workshop/wordclouds")
-  install_phantomjs()
-  saveWidget(wordclouds_to_export, paste0(wordcloud_names, ".html"), selfcontained=F)
-  webshot(paste0(wordcloud_names, ".html"), paste0(wordcloud_names, ".png"), vwidth=1992, vheight=1744, delay=10)
-}
-
-# iterate function across word clouds in list
-map2(.x=wordcloud_list, .y=names(wordcloud_list), .f=output_wordclouds)
-
-
-
-
 
