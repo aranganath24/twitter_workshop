@@ -1,0 +1,97 @@
+---
+title: "Introduction to Twitter Data in R"
+author: "Aditya Ranganath"
+date: "12/6/2021"
+output:
+  html_document:
+        toc: true
+        toc_depth: 3
+        toc_float: true
+---
+
+```{r setup, include=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Preliminaries: Load Libraries and Log into Twitter
+
+```{r, message=FALSE, warning=F}
+library(rtweet)
+library(httpuv)
+library(tidyverse)
+library(tidytext)
+library(wordcloud2)
+library(qdapRegex)
+library(tm)
+library(webshot)
+library(htmlwidgets)
+library(ggplot2)
+library(sf)
+library(tmap)
+library(knitr)
+```
+
+Make sure you're logged onto twitter in a web browser
+
+# Pull Data from the Twitter API via *rtweet* Package
+
+## Searching by hashtag
+
+```{r}
+# Pull tweets with #ValentinesDay; returns 1000 most recent tweets; time by GMT
+valentine_tweets<-search_tweets(q="#ValentinesDay", 
+                                   n=1000,
+                                   include_rts=FALSE,
+                                   `-filter`="replies",
+                                   lang="en")
+```
+
+```{r}
+#prints "valentine_tweets"
+valentine_tweets
+```
+
+## Searching by multiple hashtags or keywords
+
+### "And" conditions 
+
+```{r}
+# Pull tweets with #ValentinesDay AND #SinglesAwareness
+valentinesday_AND_singlesawareness<-search_tweets(q="#ValentinesDay #SinglesAwareness", 
+                                    n=1000,
+                                    include_rts=FALSE,
+                                    `-filter`="replies",
+                                    lang="en")
+
+```
+
+```{r}
+# prints "valentinesday_single"
+valentinesday_AND_singlesawareness
+```
+
+
+### "Or" conditions 
+
+```{r}
+# Pull tweets with #ValentinesDay OR singlesday
+valentinesday_OR_singlesawareness<-search_tweets(q="#ValentinesDay OR singlesday", 
+                                                  n=1000,
+                                                  include_rts=FALSE,
+                                                  `-filter`="replies",
+                                                  lang="en")
+
+```
+
+
+```{r}
+# prints "valentinesday_OR_singlesawareness"
+valentinesday_OR_singlesawareness
+```
+
+
+
+
+
+
+
