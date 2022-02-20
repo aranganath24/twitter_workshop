@@ -74,7 +74,7 @@ vday_tweets_most_retweeted<-vday_tweets %>%
 
 
 # prints "vday_tweets_most_retweeted"
-vday_tweets_most_retweeted
+View(vday_tweets_most_retweeted)
 
 
 # extracts table with 5 most frequently shared links from the @Vday handle
@@ -122,7 +122,6 @@ ValentinesDay_coinciding_hashtags<-ValentinesDay_coinciding_hashtags %>%
                                           mutate(hashtag=paste0("#", hashtags))
 
 
-
 # Makes inverted bar chart of "CancelStudentDebt_coinciding_hashtags"
 coincident_hashtags_plot<-
   ggplot(CancelStudentDebt_coinciding_hashtags, aes(x=reorder(hashtag, n), y=n))+
@@ -149,10 +148,14 @@ ts_plot(valentine_tweets, by="hours") +
 
 
 
+catterday<-search_tweets(q="#catterday", 
+                                n=1000,
+                                include_rts=FALSE,
+                                `-filter`="replies",
+                                lang="en")
+
+format(min(valentine_tweets$created_at), "%d %B %Y")
 
 
-
-
-
-
+vday_tweets %>% count(is_retweet)
 
