@@ -62,14 +62,6 @@ student_debt_capitalism_tweets<-search_tweets(q="#CancelStudentDebt capitalism",
                                               lang="en")
 ```
 
-```{r, eval=F}
-# Insteading of pulling from the API, you could also pull tweets with #CancelStudentDebt, and then query the text
-# of these tweets locally using a stringr function
-
-student_debt_capitalism_tweets_ALT<-student_debt_tweets %>% 
-                                     filter(str_detect(text, "[Cc]apitalism"))
-```
-
 
 ```{r, eval=F}
 # Pull tweets with #CancelStudentDebt OR capitalism
@@ -361,7 +353,7 @@ View the Denver Post word cloud by accessing from the list:
 wordcloud_list[["denverpost"]]
 ```
 
-```{r, echo=T, fig.asp=0.5}
+```{r, echo=F, fig.asp=0.5}
 setwd("~/Documents/git_repositories/twitter_workshop")
 knitr::include_graphics("images/denverpost.png")
 ```
